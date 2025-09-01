@@ -1,5 +1,6 @@
 import sys
 import path_manager
+import shortcut_manager
 import logging
 
 logging.basicConfig(level=logging.DEBUG)
@@ -24,12 +25,15 @@ if len(users) < 1:
 elif len(users) > 1:
     # Multiple logged in users found
     # TODO: prompt to select users
-    shortcuts_path = path_manager.get_shortcuts_path(steam_path, users[0])
     logger.info("User selected: %s", users[0])
+    shortcuts_path = path_manager.get_shortcuts_path(steam_path, users[0])
 else:
     # Exactly one logged in user found
-    shortcuts_path = path_manager.get_shortcuts_path(steam_path, users[0])
     logger.info("One user found: %s", users[0])
+    shortcuts_path = path_manager.get_shortcuts_path(steam_path, users[0])
+
+existing_shortcuts = shortcut_manager.get_existing_shortcuts(shortcuts_path)
+print(existing_shortcuts)
 
 # Exit
 logger.info("Exiting")
