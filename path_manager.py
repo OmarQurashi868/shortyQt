@@ -1,7 +1,6 @@
 import os
 import platform
 import winreg
-from main import logger
 
 def get_steam_path() -> str:
     if platform.system() == "Windows":
@@ -10,20 +9,21 @@ def get_steam_path() -> str:
             key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, r"SOFTWARE\Valve\Steam")
             steam_path, _ = winreg.QueryValueEx(key, "SteamPath")
             winreg.CloseKey(key)
-            logger.info("Steam found at -> %s", steam_path)
             return os.path.normpath(steam_path)
         except FileNotFoundError:
-            logger.error("Steam not found")
             return ""
     elif platform.system() == "Linux":
-        logger.error("Linux isn't supported yet")
-        return "linux"
+        return ""
     else:
-        logger.error("Could not determine operating system")
         return ""
 
 def get_steam_users(steam_path: str) -> list[str]:
-    return []
+    userdata_path = os.path.join(steam_path, "userdata")
+    try:
+        _, users, _ = next(os.walk(userdata_path))
+        return users
+    except StopIteration:
+        return []
 
 def get_shortcuts_path(steam_path: str, user: str) -> str:
-    return ""
+    return os.path.join(steam_path, "userdata", user, "config", "shortcuts.vdf")
