@@ -56,3 +56,10 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+existing_shortcuts = shortcut_manager.get_existing_shortcuts(shortcuts_path)
+print('existing shortcuts: ', existing_shortcuts)
+
+# Exit
+logger.info("Exiting")
+sys.exit(0)
