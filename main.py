@@ -2,7 +2,7 @@ import sys
 import path_manager
 import shortcut_manager
 import logging
-from PySide6 import QtWidgets, QtGui
+from PySide6 import QtWidgets
 from PySide6.QtCore import QFile
 from PySide6.QtUiTools import QUiLoader
 
@@ -47,7 +47,28 @@ else:
     logger.info("One user found: %s", users[0])
     shortcuts_path = path_manager.get_shortcuts_path(steam_path, users[0])
 
-existing_shortcuts = shortcut_manager.get_existing_shortcuts(shortcuts_path)
+shortcuts = shortcut_manager.get_existing_shortcuts(shortcuts_path)
+if not shortcuts:
+    logger.error("Error reading shortcuts.vdf")
+    sys.exit("shortcut_read_error")
+
+shortcuts_list = window.findChild(QtWidgets.QTableWidget, "shortcutsList")
+if not shortcuts_list:
+    logger.error("Can't find shortcuts table in UI")
+    sys.exit("ui_shortcut_table_not_found")
+
+columns = ["AppId", "AppName", "Path", "Image"]
+entry_columns = ["appid", "AppName", "Exe", "icon"]
+
+shortcuts_list.setRowCount(len(shortcuts))
+shortcuts_list.setColumnCount(4)
+shortcuts_list.setHorizontalHeaderLabels(columns)
+
+for row_idx, entry in enumerate(shortcuts.values()):
+    for col_idx, col in enumerate(columns):
+        item = QtWidgets.QTableWidgetItem(col)
+        item.setText(str(entry[entry_columns[col_idx]]))
+        shortcuts_list.setItem(row_idx, col_idx, item)
 
 # Exit
 sys.exit(app.exec())

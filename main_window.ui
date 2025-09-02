@@ -77,7 +77,7 @@
     </widget>
    </item>
    <item row="1" column="0">
-    <widget class="QTableWidget" name="tableWidget">
+    <widget class="QTableWidget" name="shortcutsList">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
        <horstretch>0</horstretch>
