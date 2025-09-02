@@ -33,7 +33,7 @@ else:
     shortcuts_path = path_manager.get_shortcuts_path(steam_path, users[0])
 
 existing_shortcuts = shortcut_manager.get_existing_shortcuts(shortcuts_path)
-print(existing_shortcuts)
+print('existing shortcuts: ', existing_shortcuts)
 
 # Exit
 logger.info("Exiting")
