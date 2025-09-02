@@ -2,9 +2,24 @@ import sys
 import path_manager
 import shortcut_manager
 import logging
+from PySide6 import QtWidgets, QtGui
+from PySide6.QtCore import QFile
+from PySide6.QtUiTools import QUiLoader
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger()
+
+app = QtWidgets.QApplication([])
+
+ui_file = QFile("main_window.ui")
+ui_file.open(QFile.OpenModeFlag.ReadOnly)
+loader = QUiLoader()
+window = loader.load(ui_file)
+ui_file.close()
+if not window:
+    print(loader.errorString())
+    sys.exit(-1)
+window.show()
 
 # Get path to Steam installation
 steam_path = path_manager.get_steam_path()
@@ -33,8 +48,6 @@ else:
     shortcuts_path = path_manager.get_shortcuts_path(steam_path, users[0])
 
 existing_shortcuts = shortcut_manager.get_existing_shortcuts(shortcuts_path)
-print(existing_shortcuts)
 
 # Exit
-logger.info("Exiting")
-sys.exit(0)
+sys.exit(app.exec())
