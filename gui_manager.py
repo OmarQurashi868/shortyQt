@@ -1,7 +1,7 @@
 import sys
 from typing import Tuple
 from PySide6.QtWidgets import QWidget, QApplication, QTableWidget, QHeaderView, QAbstractItemView, QTableWidgetItem, QDialog
-from PySide6.QtCore import QFile
+from PySide6.QtCore import QFile, Qt
 from PySide6.QtUiTools import QUiLoader
 
 def init_window() -> Tuple[QWidget, QApplication]:
@@ -37,6 +37,8 @@ def update_shortcut_list(window, shortcuts: dict[str, dict[str, str | int]]) -> 
     for row_idx, entry in enumerate(shortcuts.values()):
         for col_idx, col in enumerate(columns):
             item = QTableWidgetItem(col)
+            if col != "AppName":
+                item.setFlags(Qt.ItemFlag.ItemIsEditable)
             item.setText(str(entry[entry_columns[col_idx]]))
             shortcuts_list.setItem(row_idx, col_idx, item)
     return True
