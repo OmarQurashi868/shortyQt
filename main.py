@@ -1,4 +1,5 @@
 import sys
+import state
 import path_manager
 import shortcut_manager
 import gui_manager
@@ -8,7 +9,7 @@ def main():
     logging.basicConfig(level=logging.DEBUG)
     logger = logging.getLogger()
 
-    window, app = gui_manager.init_window()
+    state.window, app = gui_manager.init_window()
 
     # Get path to Steam installation
     steam_path = path_manager.get_steam_path()
@@ -46,7 +47,7 @@ def main():
     logger.info("Found shortcuts containing %i entries", len(shortcuts))
 
     # Display the list
-    success = gui_manager.update_shortcut_list(window, shortcuts)
+    success = gui_manager.update_shortcut_list(shortcuts)
     if not success:
         logger.error("Can't find shortcuts table in UI")
         sys.exit("ui_shortcut_table_not_found")

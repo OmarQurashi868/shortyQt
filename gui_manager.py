@@ -1,7 +1,9 @@
 import sys
+import state
+from metadata_manager import grab_metadata
 from typing import Tuple
-from PySide6.QtWidgets import QWidget, QApplication, QTableWidget, QHeaderView, QAbstractItemView, QTableWidgetItem, QDialog
-from PySide6.QtCore import QFile
+from PySide6.QtWidgets import QWidget, QApplication, QTableWidget, QHeaderView, QAbstractItemView, QTableWidgetItem, QDialog, QPushButton
+from PySide6.QtCore import QFile, Qt
 from PySide6.QtUiTools import QUiLoader
 
 def init_window() -> Tuple[QWidget, QApplication]:
@@ -12,15 +14,21 @@ def init_window() -> Tuple[QWidget, QApplication]:
     loader = QUiLoader()
     window = loader.load(ui_file)
     ui_file.close()
+
     if not window:
         print(loader.errorString())
         sys.exit(-1)
+
+    # Set buttons
+    metadata_button = window.findChild(QPushButton, "metadataButton", Qt.FindChildOption.FindChildrenRecursively)
+    metadata_button.clicked.connect(grab_metadata) # type: ignore
+
     window.show()
 
     return window, app
 
-def update_shortcut_list(window, shortcuts: dict[str, dict[str, str | int]]) -> bool:
-    shortcuts_list = window.findChild(QTableWidget, "shortcutsList")
+def update_shortcut_list(shortcuts: dict[str, dict[str, str | int]]) -> bool:
+    shortcuts_list = state.window.findChild(QTableWidget, "shortcutsList")
     if not shortcuts_list:
         return False
 
@@ -37,9 +45,19 @@ def update_shortcut_list(window, shortcuts: dict[str, dict[str, str | int]]) -> 
     for row_idx, entry in enumerate(shortcuts.values()):
         for col_idx, col in enumerate(columns):
             item = QTableWidgetItem(col)
+            if col != "AppName":
+                item.setFlags(item.flags() ^ Qt.ItemFlag.ItemIsEditable)
             item.setText(str(entry[entry_columns[col_idx]]))
             shortcuts_list.setItem(row_idx, col_idx, item)
     return True
+
+# FIXME
+# def get_selected_rows() -> set[int]:
+#     selected_shortcuts = set()
+#     for idx in shortcuts_list.selectionModel().selectedRows():
+#         row = idx.row()
+#         selected_shortcuts.add(row)
+#     return selected_shortcuts
 
 def popup(window: QWidget, title: str, text: str):
     dlg = QDialog(window)
