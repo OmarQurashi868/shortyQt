@@ -169,7 +169,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="dataButton">
+      <widget class="QPushButton" name="metadataButton">
        <property name="text">
         <string>Grab metadata</string>
        </property>

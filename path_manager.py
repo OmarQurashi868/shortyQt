@@ -13,6 +13,7 @@ def get_steam_path() -> str:
         except FileNotFoundError:
             return ""
     elif platform.system() == "Linux":
+        # TODO: linux support :)
         return ""
     else:
         return ""
