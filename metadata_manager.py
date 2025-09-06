@@ -8,5 +8,8 @@ def grab_metadata() -> bool:
         return False
     
     shortcuts = get_shortcuts_dict(shortcuts_list)
-    print(shortcuts)
+    for shortcut in shortcuts:
+        # TODO: grab metadata
+        pass
+    
     return True

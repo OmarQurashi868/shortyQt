@@ -51,13 +51,17 @@ def update_shortcut_list(shortcuts: dict[str, dict[str, str | int]]) -> bool:
             shortcuts_list.setItem(row_idx, col_idx, item)
     return True
 
-# FIXME
-# def get_selected_rows() -> set[int]:
-#     selected_shortcuts = set()
-#     for idx in shortcuts_list.selectionModel().selectedRows():
-#         row = idx.row()
-#         selected_shortcuts.add(row)
-#     return selected_shortcuts
+def get_selected_rows() -> set[int]:
+    selected_shortcuts = set()
+
+    shortcuts_list = state.window.findChild(QTableWidget, "shortcutsList")
+    if not shortcuts_list:
+        return selected_shortcuts
+    
+    for idx in shortcuts_list.selectionModel().selectedRows():
+        row = idx.row()
+        selected_shortcuts.add(row)
+    return selected_shortcuts
 
 def popup(window: QWidget, title: str, text: str):
     dlg = QDialog(window)
