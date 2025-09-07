@@ -6,7 +6,7 @@ from PySide6.QtWidgets import QWidget, QApplication, QTableWidget, QHeaderView, 
 from PySide6.QtCore import QFile, Qt
 from PySide6.QtUiTools import QUiLoader
 
-def init_window() -> Tuple[QWidget, QApplication]:
+def init_main_window() -> Tuple[QWidget, QApplication]:
     app = QApplication([])
 
     ui_file = QFile("main_window.ui")
@@ -26,6 +26,26 @@ def init_window() -> Tuple[QWidget, QApplication]:
     window.show()
 
     return window, app
+
+def init_setup_window() -> QWidget:
+    # TODO
+    ui_file = QFile("main_window.ui")
+    ui_file.open(QFile.OpenModeFlag.ReadOnly)
+    loader = QUiLoader()
+    window = loader.load(ui_file)
+    ui_file.close()
+
+    if not window:
+        print(loader.errorString())
+        sys.exit(-1)
+
+    # Set buttons
+    metadata_button = window.findChild(QPushButton, "metadataButton", Qt.FindChildOption.FindChildrenRecursively)
+    metadata_button.clicked.connect(grab_metadata) # type: ignore
+
+    window.show()
+
+    return window
 
 def update_shortcut_list(shortcuts: dict[str, dict[str, str | int]]) -> bool:
     shortcuts_list = state.window.findChild(QTableWidget, "shortcutsList")
