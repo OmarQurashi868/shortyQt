@@ -10,8 +10,6 @@ def steam_shortcut_id(exe, name):
     appid = crc | 0x80000000  # non-Steam flag
     return str(appid)
 
-from PySide6.QtWidgets import QTableWidget
-
 def get_existing_shortcuts(shortcuts_path: str) -> dict[str, dict[str, str | int]]:
     if os.path.exists(shortcuts_path):
         with open(shortcuts_path, "rb") as f:
