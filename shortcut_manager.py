@@ -61,8 +61,3 @@ def get_shortcuts_dict(shortcuts_list: QTableWidget) -> dict[str, dict[str, str 
             row_dict[header] = item.text() if item else None
         data[str(row)] = row_dict  # key as string to match vdf-like dicts
     return data
-    
-    
-    
-    
-            
