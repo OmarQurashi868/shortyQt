@@ -1,5 +1,6 @@
 import sys
 import state
+import state
 import path_manager
 import shortcut_manager
 import gui_manager
