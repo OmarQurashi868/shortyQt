@@ -52,12 +52,12 @@ def update_shortcut_list(shortcuts: dict[str, dict[str, str | int]]) -> bool:
     if not shortcuts_list:
         return False
 
-    columns = ["AppId", "AppName", "Path", "Image"]
-    entry_columns = ["appid", "AppName", "Exe", "icon"]
+    columns = ["AppId", "AppName", "Image", "Path"]
+    entry_columns = ["appid", "AppName", "icon", "Exe"]
 
-    shortcuts_list.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
-    shortcuts_list.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
-    shortcuts_list.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
+    # shortcuts_list.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+    # shortcuts_list.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+    # shortcuts_list.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
     shortcuts_list.setRowCount(len(shortcuts))
     shortcuts_list.setColumnCount(4)
     shortcuts_list.setHorizontalHeaderLabels(columns)
@@ -68,6 +68,8 @@ def update_shortcut_list(shortcuts: dict[str, dict[str, str | int]]) -> bool:
             if col != "AppName":
                 item.setFlags(item.flags() ^ Qt.ItemFlag.ItemIsEditable)
             item.setText(str(entry[entry_columns[col_idx]]))
+            if col == "Path":
+                item.setToolTip(str(entry[entry_columns[col_idx]]))
             shortcuts_list.setItem(row_idx, col_idx, item)
     return True
 

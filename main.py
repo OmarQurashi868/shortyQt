@@ -15,7 +15,7 @@ def main():
 
     state.window, app = gui_manager.init_main_window()
     # Dark theme
-    qdarktheme.setup_theme()
+    qdarktheme.setup_theme(additional_qss="QToolTip { border: 0px; }")
 
     if not setup_manager.validate_config():
         logger.info("Config invalid or missing, opening setup window...")
