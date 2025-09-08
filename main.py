@@ -1,6 +1,5 @@
 import sys
 import state
-import state
 import path_manager
 import shortcut_manager
 import gui_manager
@@ -34,12 +33,13 @@ def main():
 
     sys.exit(app.exec())
 
+    existing_shortcuts = shortcut_manager.get_existing_shortcuts(shortcuts_path)
+    print('existing shortcuts: ', existing_shortcuts)
+    
+    # Exit
+    logger.info("Exiting")
+    sys.exit(0)
+
 if __name__ == "__main__":
     main()
 
-existing_shortcuts = shortcut_manager.get_existing_shortcuts(shortcuts_path)
-print('existing shortcuts: ', existing_shortcuts)
-
-# Exit
-logger.info("Exiting")
-sys.exit(0)
