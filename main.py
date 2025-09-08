@@ -15,11 +15,11 @@ def main():
 
     state.window, app = gui_manager.init_main_window()
     # Dark theme
-    qdarktheme.setup_theme(additional_qss="QToolTip { border: 0px; }")
+    qdarktheme.setup_theme(theme="auto",additional_qss="QToolTip { border: 0px; }")
 
     if not setup_manager.validate_config():
         logger.info("Config invalid or missing, opening setup window...")
-        setup_window = gui_manager.init_setup_window()
+        state.setup_dialog = gui_manager.init_setup_window()
 
     # Get path to Steam installation
     # steam_path = state.steam_path
@@ -37,11 +37,11 @@ def main():
 
     # Get shortcuts
     shortcuts_path = path_manager.get_shortcuts_path(state.steam_path, state.user)
-    shortcuts = shortcut_manager.get_existing_shortcuts(shortcuts_path)
-    logger.info("Found %i shortcut entries", len(shortcuts))
+    state.shortcuts = shortcut_manager.get_existing_shortcuts(shortcuts_path)
+    logger.info("Found %i shortcut entries", len(state.shortcuts))
 
     # Display the list
-    success = gui_manager.update_shortcut_list(shortcuts)
+    success = gui_manager.update_shortcut_list(state.shortcuts)
     if not success:
         logger.error("Can't find shortcuts table in UI")
         sys.exit("ui_shortcut_table_not_found")

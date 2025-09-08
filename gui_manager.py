@@ -1,4 +1,6 @@
 import sys
+
+import qdarktheme
 import state
 from metadata_manager import grab_metadata
 from typing import Tuple
@@ -7,9 +9,12 @@ from PySide6.QtCore import QFile, Qt
 from PySide6.QtUiTools import QUiLoader
 
 def init_main_window() -> Tuple[QWidget, QApplication]:
-    app = QApplication([])
+    app = QApplication()
+    app.setPalette(qdarktheme.load_palette())
 
-    ui_file = QFile("main_window.ui")
+    state.app = app
+
+    ui_file = QFile("ui/main_window.ui")
     ui_file.open(QFile.OpenModeFlag.ReadOnly)
     loader = QUiLoader()
     window = loader.load(ui_file)
@@ -20,16 +25,16 @@ def init_main_window() -> Tuple[QWidget, QApplication]:
         sys.exit(-1)
 
     # Set buttons
-    metadata_button = window.findChild(QPushButton, "metadataButton", Qt.FindChildOption.FindChildrenRecursively)
-    metadata_button.clicked.connect(grab_metadata) # type: ignore
+    #metadata_button = window.findChild(QPushButton, "metadataButton", Qt.FindChildOption.FindChildrenRecursively)
+    window.metadataButton.clicked.connect(grab_metadata) # type: ignore
+    window.actionSetup.triggered.connect(init_setup_window) # type: ignore
 
     window.show()
 
     return window, app
 
 def init_setup_window() -> QWidget:
-    # TODO
-    ui_file = QFile("main_window.ui")
+    ui_file = QFile("ui/setup_dialog.ui")
     ui_file.open(QFile.OpenModeFlag.ReadOnly)
     loader = QUiLoader()
     window = loader.load(ui_file)
@@ -39,12 +44,11 @@ def init_setup_window() -> QWidget:
         print(loader.errorString())
         sys.exit(-1)
 
-    # Set buttons
-    metadata_button = window.findChild(QPushButton, "metadataButton", Qt.FindChildOption.FindChildrenRecursively)
-    metadata_button.clicked.connect(grab_metadata) # type: ignore
-
+    window.setWindowModality(Qt.WindowModality.ApplicationModal)
     window.show()
+    window.setFocus() # So no child takes first focus
 
+    state.setup_dialog = window
     return window
 
 def update_shortcut_list(shortcuts: dict[str, dict[str, str | int]]) -> bool:
@@ -67,9 +71,12 @@ def update_shortcut_list(shortcuts: dict[str, dict[str, str | int]]) -> bool:
             item = QTableWidgetItem(col)
             if col != "AppName":
                 item.setFlags(item.flags() ^ Qt.ItemFlag.ItemIsEditable)
-            item.setText(str(entry[entry_columns[col_idx]]))
             if col == "Path":
                 item.setToolTip(str(entry[entry_columns[col_idx]]))
+            if col == "AppId":
+                # signed int -> unsigned int
+                entry[entry_columns[col_idx]] = str(int(entry[entry_columns[col_idx]]) + (1 << 32))
+            item.setText(str(entry[entry_columns[col_idx]]))
             shortcuts_list.setItem(row_idx, col_idx, item)
     return True
 
