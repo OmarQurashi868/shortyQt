@@ -31,9 +31,13 @@ def get_config() -> dict[str, str]:
         logger.info("No existing config found, using defaults...")
         steam_path = path_manager.get_steam_path()
         users = path_manager.get_steam_users(steam_path)
+        user = ""
+        if len(users) > 0:
+            user = users[0]
+
         return {
             "steam_path": steam_path,
-            "user":  users[0] or "",
+            "user":  user,
             "api_key": ""
         }
 
@@ -44,12 +48,28 @@ def save_config():
     config["user"] = state.user
     config["api_key"] = state.api_key
 
-    # TODO: write file
+    # Write file
+    config_path = get_config_path()
+    with open(config_path, "w", encoding="utf-8") as f:
+        json.dump(config, f)
+        logger.info("Saved config")
 
 def validate_config() -> bool:
     config = get_config()
     
-    # TODO: check steam and user exist
+    # Check steam and user(s) exist
+    if not config["steam_path"]:
+        logger.error("No Steam path provided")
+        return False
+    if not os.path.exists(os.path.join(config["steam_path"], "steam.exe")):
+        logger.error("Invalid Steam path provided")
+        return False
+    logger.info("Steam found at: %s", config["steam_path"])
+
+
+    if not config["user"]:
+        logger.error("No users found")
+        return False
 
     state.steam_path = config["steam_path"]
     state.user = config["user"]
