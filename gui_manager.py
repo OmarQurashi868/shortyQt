@@ -80,6 +80,8 @@ def update_shortcut_list(shortcuts: dict[str, dict[str, str | int]]) -> bool:
                 entry[entry_columns[col_idx]] = str(int(entry[entry_columns[col_idx]]) + (1 << 32))
             item.setText(str(entry[entry_columns[col_idx]]))
             shortcuts_list.setItem(row_idx, col_idx, item)
+    
+    shortcuts_list.sortItems(1, Qt.SortOrder.AscendingOrder)
     return True
 
 def get_selected_rows() -> set[int]:
