@@ -5,7 +5,6 @@ import shortcut_manager
 import gui_manager
 import setup_manager
 import logging
-import qdarktheme
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger()
@@ -14,8 +13,6 @@ def main():
     logger.info("Initializing...")
 
     state.window, app = gui_manager.init_main_window()
-    # Dark theme
-    qdarktheme.setup_theme(theme="auto",additional_qss="QToolTip { border: 0px; }")
 
     if not setup_manager.validate_config():
         logger.info("Config invalid or missing, opening setup window...")

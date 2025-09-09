@@ -10,6 +10,8 @@ from PySide6.QtUiTools import QUiLoader
 
 def init_main_window() -> Tuple[QWidget, QApplication]:
     app = QApplication()
+    # Dark theme
+    qdarktheme.setup_theme(theme="auto",additional_qss="QToolTip { border: 0px; }")
     app.setPalette(qdarktheme.load_palette())
 
     state.app = app
