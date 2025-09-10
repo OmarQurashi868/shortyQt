@@ -70,11 +70,7 @@ def init_setup_window() -> QWidget:
     ok_button = window.buttonBox.button(QDialogButtonBox.StandardButton.Ok) # type: ignore
     ok_button.clicked.connect(confirm_config)
 
-    window.browseButton.clicked.connect( # type: ignore
-        lambda: window.pathField.setText( # type: ignore
-            QFileDialog.getExistingDirectory(window, "Select Steam folder")
-        )
-    )
+    window.browseButton.clicked.connect(set_browsed_path) # type: ignore
     
     # Window setup
     window.setWindowModality(Qt.WindowModality.ApplicationModal)
@@ -83,6 +79,11 @@ def init_setup_window() -> QWidget:
 
     state.config_window = window
     return window
+
+def set_browsed_path():
+    path = QFileDialog.getExistingDirectory(state.window, "Select Steam folder", state.steam_path)
+    if path:
+        state.config_window.pathField.setText(path) # type: ignore
 
 def update_shortcut_list(shortcuts: dict[str, dict[str, str | int]]) -> bool:
     shortcuts_list = state.window.findChild(QTableWidget, "shortcutsList")
