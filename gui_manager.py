@@ -2,7 +2,9 @@ import sys
 
 import qdarktheme
 import state
+import path_manager
 from metadata_manager import grab_metadata
+from setup_manager import is_steam_exists
 from typing import Tuple
 from PySide6.QtWidgets import QWidget, QApplication, QTableWidget, QHeaderView, QAbstractItemView, QTableWidgetItem, QDialog, QPushButton
 from PySide6.QtCore import QFile, Qt
@@ -46,6 +48,18 @@ def init_setup_window() -> QWidget:
         print(loader.errorString())
         sys.exit(-1)
 
+    # Load config into fields
+    window.pathField.setText(state.steam_path) # type: ignore
+    if is_steam_exists(state.steam_path):
+        window.pathLabel.setText("Steam installation found") # type: ignore
+        window.pathLabel.setStyleSheet(f"color: {"green"};") # type: ignore
+
+    window.apiField.setText(state.api_key) # type: ignore
+    
+    users = path_manager.get_steam_users(state.steam_path)
+    window.userSelect.addItems(users) # type: ignore
+    window.userSelect.setCurrentIndex(users.index(state.user)) # type: ignore
+    
     window.setWindowModality(Qt.WindowModality.ApplicationModal)
     window.show()
     window.setFocus() # So no child takes first focus
@@ -95,8 +109,3 @@ def get_selected_rows() -> set[int]:
         row = idx.row()
         selected_shortcuts.add(row)
     return selected_shortcuts
-
-def popup(window: QWidget, title: str, text: str):
-    dlg = QDialog(window)
-    dlg.setWindowTitle(title)
-    dlg.exec()

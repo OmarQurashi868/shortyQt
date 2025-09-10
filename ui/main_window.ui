@@ -200,6 +200,9 @@
         <bold>false</bold>
        </font>
       </property>
+      <property name="styleSheet">
+       <string notr="true">color: gray;</string>
+      </property>
       <property name="text">
        <string>Welcome to SteamShorty!</string>
       </property>

@@ -40,6 +40,13 @@ def get_config() -> dict[str, str]:
             "user":  user,
             "api_key": ""
         }
+    
+def load_config():
+    config = get_config()
+
+    state.steam_path = config["steam_path"]
+    state.user = config["user"]
+    state.api_key = config["api_key"]
 
 def save_config():
     config = {}
@@ -55,29 +62,31 @@ def save_config():
         logger.info("Saved config")
 
 def validate_config() -> bool:
-    config = get_config()
-    
-    # Check steam and user(s) exist
-    if not config["steam_path"]:
-        logger.error("No Steam path provided")
-        return False
-    if not os.path.exists(os.path.join(config["steam_path"], "steam.exe")):
+    # Check steam install
+    if not is_steam_exists(state.steam_path):
         logger.error("Invalid Steam path provided")
         return False
-    logger.info("Steam found at: %s", config["steam_path"])
+    logger.info("Steam found at: %s", state.steam_path)
 
-
-    if not config["user"]:
+    # Check user existence
+    if not state.user:
         logger.error("No users found")
         return False
 
-    state.steam_path = config["steam_path"]
-    state.user = config["user"]
-    state.api_key = config["api_key"]
+    # Check api key existence (non-fatal)
+    if not state.api_key:
+        logger.error("No API key provided")
+
 
     logger.info("Config is valid")
 
     return True
+
+def is_steam_exists(path: str) -> bool:
+    if not path or not os.path.exists(os.path.join(path, "steam.exe")):
+        return False
+    else:
+        return True
 
 def confirm_config():
     save_config()
