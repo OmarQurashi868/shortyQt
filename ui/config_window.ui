@@ -53,7 +53,7 @@
    <item row="3" column="0">
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="enabled">
-      <bool>true</bool>
+      <bool>false</bool>
      </property>
      <property name="orientation">
       <enum>Qt::Orientation::Horizontal</enum>
@@ -92,7 +92,7 @@
          <string notr="true">color: red;</string>
         </property>
         <property name="text">
-         <string>Steam installation not found</string>
+         <string>Steam installation NOT found</string>
         </property>
        </widget>
       </item>

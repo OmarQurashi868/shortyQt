@@ -16,9 +16,9 @@ def main():
 
     setup_manager.load_config()
 
-    if not setup_manager.validate_config():
+    if not setup_manager.validate_config(state.steam_path):
         logger.info("Config invalid or missing, opening setup window...")
-        state.setup_dialog = gui_manager.init_setup_window()
+        state.config_window = gui_manager.init_setup_window()
 
     # Get path to Steam installation
     # steam_path = state.steam_path

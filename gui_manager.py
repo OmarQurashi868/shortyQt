@@ -4,9 +4,9 @@ import qdarktheme
 import state
 import path_manager
 from metadata_manager import grab_metadata
-from setup_manager import is_steam_exists
+from setup_manager import is_steam_exists, on_path_change, confirm_config
 from typing import Tuple
-from PySide6.QtWidgets import QWidget, QApplication, QTableWidget, QHeaderView, QAbstractItemView, QTableWidgetItem, QDialog, QPushButton
+from PySide6.QtWidgets import QWidget, QApplication, QTableWidget, QHeaderView, QAbstractItemView, QTableWidgetItem, QDialog, QPushButton, QDialogButtonBox, QFileDialog
 from PySide6.QtCore import QFile, Qt
 from PySide6.QtUiTools import QUiLoader
 
@@ -38,7 +38,7 @@ def init_main_window() -> Tuple[QWidget, QApplication]:
     return window, app
 
 def init_setup_window() -> QWidget:
-    ui_file = QFile("ui/setup_dialog.ui")
+    ui_file = QFile("ui/config_window.ui")
     ui_file.open(QFile.OpenModeFlag.ReadOnly)
     loader = QUiLoader()
     window = loader.load(ui_file)
@@ -55,16 +55,31 @@ def init_setup_window() -> QWidget:
         window.pathLabel.setStyleSheet(f"color: {"green"};") # type: ignore
 
     window.apiField.setText(state.api_key) # type: ignore
-    
+
     users = path_manager.get_steam_users(state.steam_path)
     window.userSelect.addItems(users) # type: ignore
-    window.userSelect.setCurrentIndex(users.index(state.user)) # type: ignore
+    if state.user in users:
+        window.userSelect.setCurrentIndex(users.index(state.user)) # type: ignore
+
+    if is_steam_exists(state.steam_path) and users:
+        window.buttonBox.setEnabled(True) # type: ignore
+
+    window.pathField.textChanged.connect(on_path_change) # type: ignore
+    ok_button = window.buttonBox.button(QDialogButtonBox.StandardButton.Ok) # type: ignore
+    ok_button.clicked.connect(confirm_config)
+
+    window.browseButton.clicked.connect( # type: ignore
+        lambda: window.pathField.setText( # type: ignore
+            QFileDialog.getExistingDirectory(window, "Select Steam folder")
+        )
+    )
     
+    # Window setup
     window.setWindowModality(Qt.WindowModality.ApplicationModal)
     window.show()
     window.setFocus() # So no child takes first focus
 
-    state.setup_dialog = window
+    state.config_window = window
     return window
 
 def update_shortcut_list(shortcuts: dict[str, dict[str, str | int]]) -> bool:
