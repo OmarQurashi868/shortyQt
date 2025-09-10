@@ -1,6 +1,7 @@
 import sys
 import state
 from metadata_manager import grab_metadata
+from import_manager import import_exe
 from typing import Tuple
 from PySide6.QtWidgets import QWidget, QApplication, QTableWidget, QHeaderView, QAbstractItemView, QTableWidgetItem, QDialog, QPushButton
 from PySide6.QtCore import QFile, Qt
@@ -22,6 +23,10 @@ def init_window() -> Tuple[QWidget, QApplication]:
     # Set buttons
     metadata_button = window.findChild(QPushButton, "metadataButton", Qt.FindChildOption.FindChildrenRecursively)
     metadata_button.clicked.connect(grab_metadata) # type: ignore
+
+    add_button = window.findChild(QPushButton, "addButton")
+    add_button.clicked.connect(import_exe)
+
 
     window.show()
 
