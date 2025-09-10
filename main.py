@@ -20,20 +20,6 @@ def main():
         logger.info("Config invalid or missing, opening setup window...")
         state.config_window = gui_manager.init_setup_window()
 
-    # Get path to Steam installation
-    # steam_path = state.steam_path
-    # if steam_path == "":
-    #     logger.error("Steam not found")
-    #     # TODO: prompt to select steam path
-    #     sys.exit("no_steam")
-    # else:
-    #     logger.info("Steam found at: %s", steam_path)
-
-    # Get logged in users
-    # TODO: pick in setup
-    # user = state.user
-    # logger.info("Picked user: %s", user)
-
     # Get shortcuts
     shortcuts_path = path_manager.get_shortcuts_path(state.steam_path, state.user)
     state.shortcuts = shortcut_manager.get_existing_shortcuts(shortcuts_path)

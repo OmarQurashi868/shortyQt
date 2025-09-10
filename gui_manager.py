@@ -48,6 +48,8 @@ def init_setup_window() -> QWidget:
         print(loader.errorString())
         sys.exit(-1)
 
+    window.setWindowFlags(window.windowFlags() & ~Qt.WindowType.WindowCloseButtonHint)
+
     # Load config into fields
     window.pathField.setText(state.steam_path) # type: ignore
     if is_steam_exists(state.steam_path):
