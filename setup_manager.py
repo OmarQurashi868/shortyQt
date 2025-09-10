@@ -2,6 +2,7 @@ import os
 import platform
 import gui_manager
 import path_manager
+import shortcut_manager
 import state
 import json
 import logging
@@ -30,14 +31,10 @@ def get_config() -> dict[str, str]:
         # Return defaults
         logger.info("No existing config found, using defaults...")
         steam_path = path_manager.get_steam_path()
-        users = path_manager.get_steam_users(steam_path)
-        user = ""
-        if len(users) > 0:
-            user = users[0]
 
         return {
             "steam_path": steam_path,
-            "user":  user,
+            "user":  "",
             "api_key": ""
         }
     
@@ -110,3 +107,6 @@ def confirm_config():
     state.api_key = state.config_window.apiField.text() # type: ignore
 
     save_config()
+    shortcuts_path = path_manager.get_shortcuts_path(state.steam_path, state.user)
+    state.shortcuts = shortcut_manager.get_existing_shortcuts(shortcuts_path)
+    gui_manager.update_shortcut_list(state.shortcuts)
