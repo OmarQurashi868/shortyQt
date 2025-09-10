@@ -5,6 +5,7 @@ import state
 import path_manager
 from metadata_manager import grab_metadata
 from setup_manager import is_steam_exists, on_path_change, confirm_config
+from import_manager import import_exe
 from typing import Tuple
 from PySide6.QtWidgets import QWidget, QApplication, QTableWidget, QHeaderView, QAbstractItemView, QTableWidgetItem, QDialog, QPushButton, QDialogButtonBox, QFileDialog, QMessageBox
 from PySide6.QtCore import QFile, Qt, QObject, QEvent
@@ -34,6 +35,10 @@ def init_main_window():
     # Set buttons
     window.metadataButton.clicked.connect(grab_metadata) # type: ignore
     window.configButton.clicked.connect(init_setup_window) # type: ignore
+
+    add_button = window.findChild(QPushButton, "addButton")
+    add_button.clicked.connect(import_exe)
+
 
     window.show()
 
