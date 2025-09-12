@@ -3,51 +3,30 @@ import state
 import path_manager
 import shortcut_manager
 import gui_manager
+import setup_manager
 import logging
 
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger()
+
 def main():
-    logging.basicConfig(level=logging.DEBUG)
-    logger = logging.getLogger()
+    logger.info("Initializing...")
 
-    state.window, app = gui_manager.init_window()
+    state.window, app = gui_manager.init_main_window()
 
-    # Get path to Steam installation
-    steam_path = path_manager.get_steam_path()
-    if steam_path == "":
-        logger.error("Steam not found")
-        # TODO: prompt to select steam path
-        sys.exit("no_steam")
-    else:
-        logger.info("Steam found at: %s", steam_path)
+    setup_manager.load_config()
 
-    # Get logged in users
-    users = path_manager.get_steam_users(steam_path)
-    if len(users) < 1:
-        # No logged in users found
-        # TODO: show error dialog
-        logger.error("No steam users found")
-        sys.exit("no_users")
-    elif len(users) > 1:
-        # Multiple logged in users found
-        # TODO: prompt to select users
-        logger.info("User selected: %s", users[0])
-        shortcuts_path = path_manager.get_shortcuts_path(steam_path, users[0])
-    else:
-        # Exactly one logged in user found
-        logger.info("One user found: %s", users[0])
-        shortcuts_path = path_manager.get_shortcuts_path(steam_path, users[0])
+    if not setup_manager.validate_config(state.steam_path) or not state.user:
+        logger.info("Config invalid or missing, opening setup window...")
+        state.config_window = gui_manager.init_setup_window()
 
     # Get shortcuts
-    shortcuts = shortcut_manager.get_existing_shortcuts(shortcuts_path)
-    if not shortcuts:
-        logger.error("Error reading shortcuts.vdf")
-        # TODO: show error dialog
-        #gui_manager.popup(window, "Error", "Error reading shortcuts.vdf")
-        sys.exit("shortcut_read_error")
-    logger.info("Found shortcuts containing %i entries", len(shortcuts))
+    shortcuts_path = path_manager.get_shortcuts_path(state.steam_path, state.user)
+    state.shortcuts = shortcut_manager.get_existing_shortcuts(shortcuts_path)
+    logger.info("Found %i shortcut entries", len(state.shortcuts))
 
     # Display the list
-    success = gui_manager.update_shortcut_list(shortcuts)
+    success = gui_manager.update_shortcut_list(state.shortcuts)
     if not success:
         logger.error("Can't find shortcuts table in UI")
         sys.exit("ui_shortcut_table_not_found")

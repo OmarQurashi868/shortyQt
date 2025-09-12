@@ -1,15 +1,24 @@
 import sys
+
+import qdarktheme
 import state
+import path_manager
 from metadata_manager import grab_metadata
+from setup_manager import is_steam_exists, on_path_change, confirm_config
 from typing import Tuple
-from PySide6.QtWidgets import QWidget, QApplication, QTableWidget, QHeaderView, QAbstractItemView, QTableWidgetItem, QDialog, QPushButton
+from PySide6.QtWidgets import QWidget, QApplication, QTableWidget, QHeaderView, QAbstractItemView, QTableWidgetItem, QDialog, QPushButton, QDialogButtonBox, QFileDialog
 from PySide6.QtCore import QFile, Qt
 from PySide6.QtUiTools import QUiLoader
 
-def init_window() -> Tuple[QWidget, QApplication]:
-    app = QApplication([])
+def init_main_window() -> Tuple[QWidget, QApplication]:
+    app = QApplication()
+    # Dark theme
+    qdarktheme.setup_theme(theme="auto",additional_qss="QToolTip { border: 0px; }")
+    app.setPalette(qdarktheme.load_palette())
 
-    ui_file = QFile("main_window.ui")
+    state.app = app
+
+    ui_file = QFile("ui/main_window.ui")
     ui_file.open(QFile.OpenModeFlag.ReadOnly)
     loader = QUiLoader()
     window = loader.load(ui_file)
@@ -20,24 +29,73 @@ def init_window() -> Tuple[QWidget, QApplication]:
         sys.exit(-1)
 
     # Set buttons
-    metadata_button = window.findChild(QPushButton, "metadataButton", Qt.FindChildOption.FindChildrenRecursively)
-    metadata_button.clicked.connect(grab_metadata) # type: ignore
+    #metadata_button = window.findChild(QPushButton, "metadataButton", Qt.FindChildOption.FindChildrenRecursively)
+    window.metadataButton.clicked.connect(grab_metadata) # type: ignore
+    window.actionSetup.triggered.connect(init_setup_window) # type: ignore
 
     window.show()
 
     return window, app
+
+def init_setup_window() -> QWidget:
+    ui_file = QFile("ui/config_window.ui")
+    ui_file.open(QFile.OpenModeFlag.ReadOnly)
+    loader = QUiLoader()
+    window = loader.load(ui_file)
+    ui_file.close()
+
+    if not window:
+        print(loader.errorString())
+        sys.exit(-1)
+
+    window.setWindowFlags(window.windowFlags() & ~Qt.WindowType.WindowCloseButtonHint)
+
+    # Load config into fields
+    window.pathField.setText(state.steam_path) # type: ignore
+    if is_steam_exists(state.steam_path):
+        window.pathLabel.setText("Steam installation found") # type: ignore
+        window.pathLabel.setStyleSheet(f"color: {"green"};") # type: ignore
+
+    window.apiField.setText(state.api_key) # type: ignore
+
+    users = path_manager.get_steam_users(state.steam_path)
+    window.userSelect.addItems(users) # type: ignore
+    if state.user in users:
+        window.userSelect.setCurrentIndex(users.index(state.user)) # type: ignore
+
+    if is_steam_exists(state.steam_path) and users:
+        window.buttonBox.setEnabled(True) # type: ignore
+
+    window.pathField.textChanged.connect(on_path_change) # type: ignore
+    ok_button = window.buttonBox.button(QDialogButtonBox.StandardButton.Ok) # type: ignore
+    ok_button.clicked.connect(confirm_config)
+
+    window.browseButton.clicked.connect(set_browsed_path) # type: ignore
+    
+    # Window setup
+    window.setWindowModality(Qt.WindowModality.ApplicationModal)
+    window.show()
+    window.setFocus() # So no child takes first focus
+
+    state.config_window = window
+    return window
+
+def set_browsed_path():
+    path = QFileDialog.getExistingDirectory(state.window, "Select Steam folder", state.steam_path)
+    if path:
+        state.config_window.pathField.setText(path) # type: ignore
 
 def update_shortcut_list(shortcuts: dict[str, dict[str, str | int]]) -> bool:
     shortcuts_list = state.window.findChild(QTableWidget, "shortcutsList")
     if not shortcuts_list:
         return False
 
-    columns = ["AppId", "AppName", "Path", "Image"]
-    entry_columns = ["appid", "AppName", "Exe", "icon"]
+    columns = ["AppId", "AppName", "Image", "Path"]
+    entry_columns = ["appid", "AppName", "icon", "Exe"]
 
-    shortcuts_list.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
-    shortcuts_list.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
-    shortcuts_list.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
+    # shortcuts_list.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+    # shortcuts_list.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+    # shortcuts_list.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
     shortcuts_list.setRowCount(len(shortcuts))
     shortcuts_list.setColumnCount(4)
     shortcuts_list.setHorizontalHeaderLabels(columns)
@@ -47,8 +105,15 @@ def update_shortcut_list(shortcuts: dict[str, dict[str, str | int]]) -> bool:
             item = QTableWidgetItem(col)
             if col != "AppName":
                 item.setFlags(item.flags() ^ Qt.ItemFlag.ItemIsEditable)
+            if col == "Path":
+                item.setToolTip(str(entry[entry_columns[col_idx]]))
+            if col == "AppId":
+                # signed int -> unsigned int
+                entry[entry_columns[col_idx]] = str(int(entry[entry_columns[col_idx]]) + (1 << 32))
             item.setText(str(entry[entry_columns[col_idx]]))
             shortcuts_list.setItem(row_idx, col_idx, item)
+    
+    shortcuts_list.sortItems(1, Qt.SortOrder.AscendingOrder)
     return True
 
 def get_selected_rows() -> set[int]:
@@ -62,8 +127,3 @@ def get_selected_rows() -> set[int]:
         row = idx.row()
         selected_shortcuts.add(row)
     return selected_shortcuts
-
-def popup(window: QWidget, title: str, text: str):
-    dlg = QDialog(window)
-    dlg.setWindowTitle(title)
-    dlg.exec()
