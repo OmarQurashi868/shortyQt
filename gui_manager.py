@@ -25,7 +25,7 @@ except ImportError:
 
 
 
-def init_window():
+def init_main_window():
     app = QApplication()
     # Dark theme
     qdarktheme.setup_theme(theme="auto", corner_shape="sharp", additional_qss="QToolTip { border: 0px; }")
