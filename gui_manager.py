@@ -2,12 +2,10 @@ import sys
 
 import qdarktheme
 import state
-import path_manager
 import logging
 import os
 import platform
 from typing import Tuple
-import path_manager
 import path_manager
 import logging
 import os
@@ -18,6 +16,7 @@ from shortcut_manager import add_new_shortcut, get_existing_shortcuts
 from PySide6.QtWidgets import QWidget, QApplication, QTableWidget, QHeaderView, QAbstractItemView, QTableWidgetItem, QDialog, QPushButton, QFileDialog
 from PySide6.QtCore import QFile, Qt
 from PySide6.QtUiTools import QUiLoader
+from setup_manager import is_steam_exists, on_path_change, confirm_config
 
 try:
     import win32api
@@ -146,9 +145,7 @@ def update_shortcut_list(shortcuts: dict[str, dict[str, str | int]]) -> bool:
             if col != "AppName":
                 item.setFlags(item.flags() ^ Qt.ItemFlag.ItemIsEditable)
             if col == "Path":
-                
-            value = entry.get(entry_columns[col_idx], "")
-            item.setToolTip(str(value))
+                item.setToolTip(str(entry[entry_columns[col_idx]]))
             if col == "AppId":
                 # signed int -> unsigned int
                 entry[entry_columns[col_idx]] = str(int(entry[entry_columns[col_idx]]) + (1 << 32))

@@ -36,7 +36,7 @@ def add_new_shortcut(shortcuts_path: str, exe_path: str, name: str = "", icon_pa
         current_shortcuts[index] = { # Modifying the current shortcuts dict
             "appid": appid,
             "AppName": name,
-            "Exe": f"\"{path}\"",
+            "Exe": f"\"{exe_path}\"",
             "StartDir": f"\"{start_dir}\"",
             "LaunchOptions": "",
             "Icon": "",
