@@ -8,4 +8,4 @@ steam_path: str
 user: str
 api_key: str
 
-shortcuts: dict[str, dict[str, str | int]]
+shortcuts: dict[str, dict[str, str | int | dict[int, str]]]
