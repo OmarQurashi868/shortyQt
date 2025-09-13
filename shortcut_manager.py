@@ -47,7 +47,7 @@ def add_new_shortcut(path: str, name: str = ""):
             "AllowOverlay": 1,
             "OpenVR": 0,
             "LastPlayTime": 0,
-            "tags": {"0": "Shorty"}
+            "tags": {"0": ""}
         }
         
         set_new_shortcuts(shortcuts_path)
