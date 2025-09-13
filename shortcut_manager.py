@@ -25,7 +25,6 @@ def set_new_shortcuts(shortcuts: dict, shortcuts_path: str):
             vdf.binary_dump(data_to_save, f)
             
 
-
 def add_new_shortcut(shortcuts_path: str, exe_path: str, name: str = "", icon_path: str = ""):
     if os.path.exists(shortcuts_path):
         current_shortcuts = get_existing_shortcuts(shortcuts_path)

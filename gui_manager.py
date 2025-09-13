@@ -8,8 +8,14 @@ import os
 import platform
 from typing import Tuple
 import path_manager
+import path_manager
+import logging
+import os
+import platform
+from typing import Tuple
 from metadata_manager import grab_metadata
-from PySide6.QtWidgets import QWidget, QApplication, QTableWidget, QHeaderView, QAbstractItemView, QTableWidgetItem, QDialog, QPushButton
+from shortcut_manager import add_new_shortcut, get_existing_shortcuts
+from PySide6.QtWidgets import QWidget, QApplication, QTableWidget, QHeaderView, QAbstractItemView, QTableWidgetItem, QDialog, QPushButton, QFileDialog
 from PySide6.QtCore import QFile, Qt
 from PySide6.QtUiTools import QUiLoader
 
@@ -19,7 +25,8 @@ except ImportError:
     win32api = None
 
 
-def init_main_window():
+
+def init_window():
     app = QApplication()
     # Dark theme
     qdarktheme.setup_theme(theme="auto", corner_shape="sharp", additional_qss="QToolTip { border: 0px; }")
@@ -41,6 +48,12 @@ def init_main_window():
     window.statusBar().showMessage("Welcome to SteamShorty!") # type: ignore
 
     # Set buttons
+    metadata_button = window.findChild(QPushButton, "metadataButton", Qt.FindChildOption.FindChildrenRecursively)
+    metadata_button.clicked.connect(grab_metadata) # type: ignore
+
+    add_button = window.findChild(QPushButton, "addButton")
+    add_button.clicked.connect(add_exe)
+
     window.metadataButton.clicked.connect(grab_metadata) # type: ignore
     window.configButton.clicked.connect(init_setup_window) # type: ignore
 
@@ -118,6 +131,7 @@ def update_shortcut_list(shortcuts: dict[str, dict[str, str | int]]) -> bool:
 
     columns = ["AppId", "AppName", "Path", "Image"]
     entry_columns = ["appid", "AppName", "Exe", "Icon"]
+    entry_columns = ["appid", "AppName", "Exe", "Icon"]
 
     # shortcuts_list.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
     # shortcuts_list.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
@@ -132,7 +146,9 @@ def update_shortcut_list(shortcuts: dict[str, dict[str, str | int]]) -> bool:
             if col != "AppName":
                 item.setFlags(item.flags() ^ Qt.ItemFlag.ItemIsEditable)
             if col == "Path":
-                item.setToolTip(str(entry[entry_columns[col_idx]]))
+                
+            value = entry.get(entry_columns[col_idx], "")
+            item.setToolTip(str(value))
             if col == "AppId":
                 # signed int -> unsigned int
                 entry[entry_columns[col_idx]] = str(int(entry[entry_columns[col_idx]]) + (1 << 32))
