@@ -2,13 +2,29 @@ import sys
 
 import qdarktheme
 import state
-import path_manager
-from metadata_manager import grab_metadata
-from setup_manager import is_steam_exists, on_path_change, confirm_config
+import logging
+import os
+import platform
 from typing import Tuple
-from PySide6.QtWidgets import QWidget, QApplication, QTableWidget, QHeaderView, QAbstractItemView, QTableWidgetItem, QDialog, QPushButton, QDialogButtonBox, QFileDialog, QMessageBox
-from PySide6.QtCore import QFile, Qt, QObject, QEvent
+import path_manager
+import logging
+import os
+import platform
+from typing import Tuple
+from metadata_manager import grab_metadata
+from shortcut_manager import add_new_shortcut, get_existing_shortcuts
+from PySide6.QtWidgets import QWidget, QApplication, QTableWidget, QHeaderView, QAbstractItemView, QTableWidgetItem, QDialog, QPushButton, QFileDialog, QDialogButtonBox
+from PySide6.QtCore import QFile, Qt
 from PySide6.QtUiTools import QUiLoader
+from setup_manager import is_steam_exists, on_path_change, confirm_config
+
+try:
+    import win32api
+except ImportError:
+    win32api = None
+
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger()
 
 def init_main_window():
     app = QApplication()
@@ -32,23 +48,16 @@ def init_main_window():
     window.statusBar().showMessage("Welcome to SteamShorty!") # type: ignore
 
     # Set buttons
+    metadata_button = window.findChild(QPushButton, "metadataButton", Qt.FindChildOption.FindChildrenRecursively)
+    metadata_button.clicked.connect(grab_metadata) # type: ignore
+
+    add_button = window.findChild(QPushButton, "addButton")
+    add_button.clicked.connect(add_exe) # type: ignore
+
     window.metadataButton.clicked.connect(grab_metadata) # type: ignore
     window.configButton.clicked.connect(init_setup_window) # type: ignore
 
     window.show()
-
-    # reply = QMessageBox.question(
-    #     state.window,
-    #     "Confirm Exit",
-    #     "Are you sure you want to exit?\nAny unimported shortcuts will be lost",
-    #     QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
-    #     QMessageBox.StandardButton.No
-    # )
-    # if reply == QMessageBox.StandardButton.Yes:
-    #     return False  # allow close
-    # else:
-    #     event.ignore()
-    #     return True   # block close
 
 def init_setup_window():
     ui_file = QFile("ui/config_window.ui")
@@ -92,7 +101,6 @@ def init_setup_window():
     window.show()
     window.setFocus() # So no child takes first focus
 
-
 def set_browsed_path():
     path = QFileDialog.getExistingDirectory(state.window, "Select Steam folder", state.steam_path)
     if path:
@@ -104,7 +112,7 @@ def update_shortcut_list(shortcuts: dict[str, dict[str, str | int]]) -> bool:
         return False
 
     columns = ["AppId", "AppName", "Image", "Path"]
-    entry_columns = ["appid", "AppName", "icon", "Exe"]
+    entry_columns = ["appid", "AppName", "Icon", "Exe"]
 
     # shortcuts_list.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
     # shortcuts_list.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
@@ -123,7 +131,9 @@ def update_shortcut_list(shortcuts: dict[str, dict[str, str | int]]) -> bool:
             if col == "AppId":
                 # signed int -> unsigned int
                 entry[entry_columns[col_idx]] = str(int(entry[entry_columns[col_idx]]) + (1 << 32))
-            item.setText(str(entry[entry_columns[col_idx]]))
+            
+            value = entry.get(entry_columns[col_idx], "")
+            item.setText(str(value))
             shortcuts_list.setItem(row_idx, col_idx, item)
     
     shortcuts_list.sortItems(1, Qt.SortOrder.AscendingOrder)
@@ -140,3 +150,38 @@ def get_selected_rows() -> set[int]:
         row = idx.row()
         selected_shortcuts.add(row)
     return selected_shortcuts
+
+def add_exe():
+    exe_path, _ = QFileDialog.getOpenFileName(
+        state.window,
+        "Select Executable",
+        "",
+        "Executable Files (*.exe)"
+    )
+
+    exe_path = os.path.normpath(exe_path)
+    if not exe_path or exe_path == ".":
+        return
+
+    logger.info("Selected exe path: %s", exe_path)
+
+    app_name = extract_app_name(exe_path)
+    add_new_shortcut(exe_path, app_name)
+
+    shortcuts_path = path_manager.get_shortcuts_path(state.steam_path, state.user)
+    new_shortcuts = get_existing_shortcuts(shortcuts_path)
+    update_shortcut_list(new_shortcuts)
+
+def extract_app_name(exe_path: str) -> str:
+    system = platform.system()
+
+    if system == "Windows" and win32api:
+        try:
+            info = win32api.GetFileVersionInfo(exe_path, "\\")
+            lang, codepage = list(info['StringFileInfo'].keys())[0] # type: ignore
+            metadata = info['StringFileInfo'][(lang, codepage)] # type: ignore
+            return metadata.get('FileDescription') or metadata.get('ProductName') or ""
+        except Exception:
+            pass
+
+    return os.path.splitext(os.path.basename(exe_path))[0]
