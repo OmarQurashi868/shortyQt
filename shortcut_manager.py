@@ -17,10 +17,10 @@ def get_existing_shortcuts(shortcuts_path: str) -> dict[str, dict[str, str | int
             return vdf.binary_load(f)['shortcuts']
     return {}
 
-def set_new_shortcuts(shortcuts: dict, shortcuts_path: str):
+def set_new_shortcuts(shortcuts_path: str):
     if os.path.exists(shortcuts_path):
         with open(shortcuts_path, "wb") as f:
-            vdf.binary_dump(shortcuts, f)
+            vdf.binary_dump(state.shortcuts, f)
             
 def add_new_shortcut(path: str):
     if os.path.exists(path):
