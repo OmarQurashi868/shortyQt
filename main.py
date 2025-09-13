@@ -12,13 +12,13 @@ logger = logging.getLogger()
 def main():
     logger.info("Initializing...")
 
-    state.window, app = gui_manager.init_main_window()
+    gui_manager.init_main_window()
 
     setup_manager.load_config()
 
     if not setup_manager.validate_config(state.steam_path) or not state.user:
         logger.info("Config invalid or missing, opening setup window...")
-        state.config_window = gui_manager.init_setup_window()
+        gui_manager.init_setup_window()
 
     # Get shortcuts
     shortcuts_path = path_manager.get_shortcuts_path(state.steam_path, state.user)
@@ -31,7 +31,7 @@ def main():
         logger.error("Can't find shortcuts table in UI")
         sys.exit("ui_shortcut_table_not_found")
 
-    sys.exit(app.exec())
+    sys.exit(state.app.exec())
 
 if __name__ == "__main__":
     main()
