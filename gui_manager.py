@@ -6,14 +6,14 @@ import path_manager
 from metadata_manager import grab_metadata
 from setup_manager import is_steam_exists, on_path_change, confirm_config
 from typing import Tuple
-from PySide6.QtWidgets import QWidget, QApplication, QTableWidget, QHeaderView, QAbstractItemView, QTableWidgetItem, QDialog, QPushButton, QDialogButtonBox, QFileDialog
-from PySide6.QtCore import QFile, Qt
+from PySide6.QtWidgets import QWidget, QApplication, QTableWidget, QHeaderView, QAbstractItemView, QTableWidgetItem, QDialog, QPushButton, QDialogButtonBox, QFileDialog, QMessageBox
+from PySide6.QtCore import QFile, Qt, QObject, QEvent
 from PySide6.QtUiTools import QUiLoader
 
-def init_main_window() -> Tuple[QWidget, QApplication]:
+def init_main_window():
     app = QApplication()
     # Dark theme
-    qdarktheme.setup_theme(theme="auto",additional_qss="QToolTip { border: 0px; }")
+    qdarktheme.setup_theme(theme="auto", corner_shape="sharp", additional_qss="QToolTip { border: 0px; }")
     app.setPalette(qdarktheme.load_palette())
 
     state.app = app
@@ -28,16 +28,29 @@ def init_main_window() -> Tuple[QWidget, QApplication]:
         print(loader.errorString())
         sys.exit(-1)
 
+    state.window = window
+    window.statusBar().showMessage("Welcome to SteamShorty!") # type: ignore
+
     # Set buttons
-    #metadata_button = window.findChild(QPushButton, "metadataButton", Qt.FindChildOption.FindChildrenRecursively)
     window.metadataButton.clicked.connect(grab_metadata) # type: ignore
-    window.actionSetup.triggered.connect(init_setup_window) # type: ignore
+    window.configButton.clicked.connect(init_setup_window) # type: ignore
 
     window.show()
 
-    return window, app
+    # reply = QMessageBox.question(
+    #     state.window,
+    #     "Confirm Exit",
+    #     "Are you sure you want to exit?\nAny unimported shortcuts will be lost",
+    #     QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+    #     QMessageBox.StandardButton.No
+    # )
+    # if reply == QMessageBox.StandardButton.Yes:
+    #     return False  # allow close
+    # else:
+    #     event.ignore()
+    #     return True   # block close
 
-def init_setup_window() -> QWidget:
+def init_setup_window():
     ui_file = QFile("ui/config_window.ui")
     ui_file.open(QFile.OpenModeFlag.ReadOnly)
     loader = QUiLoader()
@@ -47,6 +60,8 @@ def init_setup_window() -> QWidget:
     if not window:
         print(loader.errorString())
         sys.exit(-1)
+
+    state.config_window = window
 
     window.setWindowFlags(window.windowFlags() & ~Qt.WindowType.WindowCloseButtonHint)
 
@@ -77,8 +92,6 @@ def init_setup_window() -> QWidget:
     window.show()
     window.setFocus() # So no child takes first focus
 
-    state.config_window = window
-    return window
 
 def set_browsed_path():
     path = QFileDialog.getExistingDirectory(state.window, "Select Steam folder", state.steam_path)
