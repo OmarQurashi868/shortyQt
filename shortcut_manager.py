@@ -3,7 +3,7 @@ import vdf
 import zlib
 from PySide6.QtWidgets import QTableWidget
 
-def steam_shortcut_id(exe, name):
+def get_appid(exe, name):
     """Generate Steam shortcut AppID (same algo Steam uses)."""
     data = f"{exe}{name}".encode("utf-8")
     crc = zlib.crc32(data) & 0xFFFFFFFF
@@ -27,7 +27,7 @@ def add_new_shortcut(shortcuts_path: str, exe_path: str, name: str, icon_path: s
     if os.path.exists(shortcuts_path):
         current_shortcuts = get_existing_shortcuts(shortcuts_path)
         
-        appid = steam_shortcut_id(exe_path, name)
+        appid = get_appid(exe_path, name)
         start_dir = os.path.dirname(exe_path)
         
         index = len(current_shortcuts) # Key of the new shortcut entry

@@ -54,13 +54,6 @@ def main():
 
     sys.exit(app.exec())
 
-    existing_shortcuts = shortcut_manager.get_existing_shortcuts(shortcuts_path)
-    print('existing shortcuts: ', existing_shortcuts)
-    
-    # Exit
-    logger.info("Exiting")
-    sys.exit(0)
-
 if __name__ == "__main__":
     main()
 
