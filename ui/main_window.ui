@@ -41,16 +41,16 @@
        </spacer>
       </item>
       <item>
-       <widget class="QPushButton" name="deleteButton">
+       <widget class="QPushButton" name="metadataButton">
         <property name="text">
-         <string>Delete selected</string>
+         <string>Grab metadata</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="metadataButton">
+       <widget class="QPushButton" name="deleteButton">
         <property name="text">
-         <string>Grab metadata</string>
+         <string>Delete selected</string>
         </property>
        </widget>
       </item>

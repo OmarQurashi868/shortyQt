@@ -171,6 +171,7 @@ def add_exe():
     shortcuts_path = path_manager.get_shortcuts_path(state.steam_path, state.user)
     new_shortcuts = get_existing_shortcuts(shortcuts_path)
     update_shortcut_list(new_shortcuts)
+    state.window.statusBar().showMessage(f"\"{app_name}\" was added successfully") # type: ignore
 
 def extract_app_name(exe_path: str) -> str:
     system = platform.system()
