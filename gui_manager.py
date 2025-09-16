@@ -5,14 +5,14 @@ import state
 import logging
 import os
 import platform
-from typing import Tuple
+from typing import Tuple, Any
 import path_manager
 import logging
 import os
 import platform
 from typing import Tuple
-from metadata_manager import grab_metadata
-from shortcut_manager import add_new_shortcut, get_existing_shortcuts
+import metadata_manager
+import shortcut_manager
 from PySide6.QtWidgets import QWidget, QApplication, QTableWidget, QHeaderView, QAbstractItemView, QTableWidgetItem, QDialog, QPushButton, QFileDialog, QDialogButtonBox
 from PySide6.QtCore import QFile, Qt
 from PySide6.QtUiTools import QUiLoader
@@ -41,21 +41,24 @@ def init_main_window():
     ui_file.close()
 
     if not window:
-        print(loader.errorString())
+        logger.error(loader.errorString())
         sys.exit(-1)
 
     state.window = window
     window.statusBar().showMessage("Welcome to SteamShorty!") # type: ignore
 
     # Set buttons
-    metadata_button = window.findChild(QPushButton, "metadataButton", Qt.FindChildOption.FindChildrenRecursively)
-    metadata_button.clicked.connect(grab_metadata) # type: ignore
+    metadata_button = window.findChild(QPushButton, "metadataButton")
+    metadata_button.clicked.connect(metadata_manager.grab_metadata) # type: ignore
 
     add_button = window.findChild(QPushButton, "addButton")
     add_button.clicked.connect(add_exe) # type: ignore
 
-    window.metadataButton.clicked.connect(grab_metadata) # type: ignore
-    window.configButton.clicked.connect(init_setup_window) # type: ignore
+    config_button = window.findChild(QPushButton, "configButton")
+    config_button.clicked.connect(init_setup_window) # type: ignore
+
+    table = window.findChild(QTableWidget, "shortcutsList")
+    table.cellChanged.connect(shortcut_manager.on_cell_changed) # type: ignore
 
     window.show()
 
@@ -67,7 +70,7 @@ def init_setup_window():
     ui_file.close()
 
     if not window:
-        print(loader.errorString())
+        logger.error(loader.errorString())
         sys.exit(-1)
 
     state.config_window = window
@@ -106,10 +109,11 @@ def set_browsed_path():
     if path:
         state.config_window.pathField.setText(path) # type: ignore
 
-def update_shortcut_list(shortcuts: dict[str, dict[str, str | int]]) -> bool:
+def update_shortcut_list(shortcuts: dict[str, Any]) -> bool:
     shortcuts_list = state.window.findChild(QTableWidget, "shortcutsList")
     if not shortcuts_list:
         return False
+    shortcuts_list.blockSignals(True)
 
     columns = ["AppId", "AppName", "Image", "Path"]
     entry_columns = ["appid", "AppName", "Icon", "Exe"]
@@ -137,6 +141,7 @@ def update_shortcut_list(shortcuts: dict[str, dict[str, str | int]]) -> bool:
             shortcuts_list.setItem(row_idx, col_idx, item)
     
     shortcuts_list.sortItems(1, Qt.SortOrder.AscendingOrder)
+    shortcuts_list.blockSignals(False)
     return True
 
 def get_selected_rows() -> set[int]:
@@ -166,10 +171,10 @@ def add_exe():
     logger.info("Selected exe path: %s", exe_path)
 
     app_name = extract_app_name(exe_path)
-    add_new_shortcut(exe_path, app_name)
+    shortcut_manager.add_new_shortcut(exe_path, app_name)
 
     shortcuts_path = path_manager.get_shortcuts_path(state.steam_path, state.user)
-    new_shortcuts = get_existing_shortcuts(shortcuts_path)
+    new_shortcuts = shortcut_manager.get_existing_shortcuts(shortcuts_path)
     update_shortcut_list(new_shortcuts)
     state.window.statusBar().showMessage(f"\"{app_name}\" was added successfully") # type: ignore
 

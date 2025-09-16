@@ -3,7 +3,12 @@ import vdf
 import zlib
 import state
 import path_manager
+import gui_manager
 from PySide6.QtWidgets import QTableWidget
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger()
 
 def get_appid(exe, name):
     """Generate Steam shortcut AppID (same algo Steam uses)."""
@@ -19,7 +24,8 @@ def get_existing_shortcuts(shortcuts_path: str) -> dict[str, dict[str, str | int
     return {}
 
 
-def set_new_shortcuts(shortcuts_path: str):
+def set_new_shortcuts():
+    shortcuts_path = path_manager.get_shortcuts_path(state.steam_path, state.user)
     data_to_save = {"shortcuts": state.shortcuts}
     if os.path.exists(shortcuts_path):
         with open(shortcuts_path, "wb") as f:
@@ -47,10 +53,10 @@ def add_new_shortcut(path: str, name: str = ""):
             "AllowOverlay": 1,
             "OpenVR": 0,
             "LastPlayTime": 0,
-            "tags": {"0": ""}
+            "tags": {"0": "SteamShorty"}
         }
         
-        set_new_shortcuts(shortcuts_path)
+        set_new_shortcuts()
 
 def get_shortcuts_dict(shortcuts_list: QTableWidget) -> dict[str, dict[str, str | int]]:
     headers = [shortcuts_list.horizontalHeaderItem(i).text() for i in range(shortcuts_list.columnCount())]  # type: ignore
@@ -65,3 +71,25 @@ def get_shortcuts_dict(shortcuts_list: QTableWidget) -> dict[str, dict[str, str 
             row_dict[header] = item.text() if item else None
         data[str(row)] = row_dict  # type: ignore # key as string to match vdf-like dicts
     return data
+
+def on_cell_changed(row, col):
+    appid_item = state.window.shortcutsList.item(row, 0) # type: ignore
+    if not appid_item:
+        return
+    
+    app_id = appid_item.text()
+    shortcut_id = get_shortcut_id_by_appid(app_id)
+    if shortcut_id == -1:
+        logger.error("Invalid cell changed")
+
+    state.shortcuts[shortcut_id]["AppName"] = state.window.shortcutsList.item(row, 1).text() # type: ignore
+    set_new_shortcuts()
+    gui_manager.update_shortcut_list(state.shortcuts)
+
+def get_shortcut_id_by_appid(app_id: str) -> str:
+    shortcuts = state.shortcuts
+    for _, k in enumerate(shortcuts):
+        shortcut = shortcuts[k]
+        if shortcut["appid"] == app_id:
+            return k
+    return "-1"
