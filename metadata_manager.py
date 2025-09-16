@@ -11,7 +11,7 @@ logger = logging.getLogger()
 
 def grab_metadata():
     if not state.api_key:
-        logger.error("No API key for steamgriddb defined in config")
+        logger.error("No API key for SteamGridDB defined in config")
         return
     
     url = "https://www.steamgriddb.com/api/v2"
