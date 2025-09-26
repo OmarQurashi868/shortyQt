@@ -47,6 +47,8 @@ def add_new_shortcut(shortcuts_path: str, exe_path: str, name: str = "", icon_pa
             "tags": {"0": ""}
         }
 
+        set_new_shortcuts(current_shortcuts, shortcuts_path)
+
 def get_shortcuts_dict(shortcuts_list: QTableWidget) -> dict[str, dict[str, str | int]]:
     headers = [shortcuts_list.horizontalHeaderItem(i).text() for i in range(shortcuts_list.columnCount())]  # type: ignore
     # NOTE: the original main branch returned inside the loop (likely a bug).

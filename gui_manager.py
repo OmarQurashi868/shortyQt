@@ -10,7 +10,6 @@ import path_manager
 import logging
 import os
 import platform
-from typing import Tuple
 from metadata_manager import grab_metadata
 from shortcut_manager import add_new_shortcut, get_existing_shortcuts
 from PySide6.QtWidgets import QWidget, QApplication, QTableWidget, QHeaderView, QAbstractItemView, QTableWidgetItem, QDialog, QPushButton, QFileDialog
@@ -55,9 +54,6 @@ def init_main_window():
 
     window.metadataButton.clicked.connect(grab_metadata) # type: ignore
     window.configButton.clicked.connect(init_setup_window) # type: ignore
-
-    add_button = window.findChild(QPushButton, "addButton")
-    add_button.clicked.connect(add_exe)
 
 
     window.show()
