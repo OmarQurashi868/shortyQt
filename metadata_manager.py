@@ -12,7 +12,10 @@ logger = logging.getLogger()
 def grab_metadata():
     if not state.api_key:
         logger.error("No API key for SteamGridDB defined in config")
+        state.window.statusBar().showMessage("SteamGridDB API key not set in config") # type: ignore
         return
+
+    state.window.statusBar().showMessage("Grabbing metadata...") # type: ignore
     
     url = "https://www.steamgriddb.com/api/v2"
 
@@ -37,5 +40,7 @@ def grab_metadata():
         game_name = game["name"]
 
         state.shortcuts[k]["AppName"] = game_name
-        shortcut_manager.set_new_shortcuts()
-        gui_manager.update_shortcut_list(state.shortcuts)
+    
+    shortcut_manager.set_new_shortcuts()
+    gui_manager.update_shortcut_list(state.shortcuts)
+    state.window.statusBar().showMessage("Grabbing metadata... Done!") # type: ignore
