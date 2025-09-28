@@ -158,8 +158,10 @@ def get_selected_appids() -> list[int]:
     
     for idx in shortcuts_list.selectionModel().selectedRows():
         row = idx.row()
-        selected_shortcuts.add(row)
-    return selected_shortcuts
+        item = shortcuts_list.item(row, appid_col)
+        if item:
+            appids.append(item.text())
+        return appids
 
 def popup(window: QWidget, title: str, text: str):
     dlg = QDialog(window)
