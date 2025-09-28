@@ -52,6 +52,8 @@ def add_new_shortcut(path: str, name: str = ""):
         
         set_new_shortcuts(shortcuts_path)
 
+        set_new_shortcuts(current_shortcuts, shortcuts_path)
+
 def get_shortcuts_dict(shortcuts_list: QTableWidget) -> dict[str, dict[str, str | int]]:
     headers = [shortcuts_list.horizontalHeaderItem(i).text() for i in range(shortcuts_list.columnCount())]  # type: ignore
     # NOTE: the original main branch returned inside the loop (likely a bug).
@@ -65,3 +67,12 @@ def get_shortcuts_dict(shortcuts_list: QTableWidget) -> dict[str, dict[str, str 
             row_dict[header] = item.text() if item else None
         data[str(row)] = row_dict  # type: ignore # key as string to match vdf-like dicts
     return data
+
+
+def get_shortcut_id_by_appid(app_id: str) -> str:
+    shortcuts = state.shortcuts
+    for _, k in enumerate(shortcuts):
+        shortcut = shortcuts[k]
+        if shortcut["appid"] == app_id:
+            return k
+    return "-1"
