@@ -7,12 +7,8 @@ import os
 import platform
 from typing import Tuple
 import path_manager
-import logging
-import os
-import platform
-from typing import Tuple
 from metadata_manager import grab_metadata
-from shortcut_manager import add_new_shortcut, get_existing_shortcuts
+from shortcut_manager import add_new_shortcut, get_existing_shortcuts, get_shortcut_id_by_appid, set_new_shortcuts
 from PySide6.QtWidgets import QWidget, QApplication, QTableWidget, QHeaderView, QAbstractItemView, QTableWidgetItem, QDialog, QPushButton, QFileDialog
 from PySide6.QtCore import QFile, Qt
 from PySide6.QtUiTools import QUiLoader
@@ -23,7 +19,8 @@ try:
 except ImportError:
     win32api = None
 
-
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger()
 
 def init_main_window():
     app = QApplication()
@@ -53,11 +50,13 @@ def init_main_window():
     add_button = window.findChild(QPushButton, "addButton")
     add_button.clicked.connect(add_exe)
 
+
+    delete_button = window.findChild(QPushButton, "deleteButton")
+    delete_button.clicked.connect(delete_shortcut)
+
+
     window.metadataButton.clicked.connect(grab_metadata) # type: ignore
     window.configButton.clicked.connect(init_setup_window) # type: ignore
-
-    add_button = window.findChild(QPushButton, "addButton")
-    add_button.clicked.connect(add_exe)
 
 
     window.show()
@@ -157,17 +156,27 @@ def update_shortcut_list(shortcuts: dict[str, dict[str, str | int]]) -> bool:
     shortcuts_list.sortItems(1, Qt.SortOrder.AscendingOrder)
     return True
 
-def get_selected_rows() -> set[int]:
-    selected_shortcuts = set()
+def get_selected_appids() -> list[int]:
+    appids = list()
 
     shortcuts_list = state.window.findChild(QTableWidget, "shortcutsList")
     if not shortcuts_list:
-        return selected_shortcuts
+        return appids
+    
+    for i in range(shortcuts_list.columnCount()):
+        if shortcuts_list.horizontalHeaderItem(i).text() == "AppId":
+            appid_col = i
+            break
+        if appid_col is None:
+            return appids
+        
     
     for idx in shortcuts_list.selectionModel().selectedRows():
         row = idx.row()
-        selected_shortcuts.add(row)
-    return selected_shortcuts
+        item = shortcuts_list.item(row, appid_col)
+        if item:
+            appids.append(item.text())
+        return appids
 
 def popup(window: QWidget, title: str, text: str):
     dlg = QDialog(window)
@@ -199,6 +208,27 @@ def add_exe():
 
 
 
+def delete_shortcut():
+    appids = get_selected_appids()
+    shortcuts_path = path_manager.get_shortcuts_path(state.steam_path, state.user)
+    current_shortcuts = get_existing_shortcuts(shortcuts_path)
+
+    indecies = []
+
+    for appid in appids:
+        indecies.append(get_shortcut_id_by_appid(appid))
+    
+    for indx in indecies:
+        deleted = current_shortcuts.pop(indx, None)
+        if deleted is None:
+            logger.info(f"Failed to delete item #{indx}")
+        
+    set_new_shortcuts(current_shortcuts, shortcuts_path)
+    update_shortcut_list(current_shortcuts)
+    
+    
+
+            
 def extract_app_name(exe_path: str) -> str:
     system = platform.system()
 
