@@ -207,7 +207,7 @@ def delete_shortcut():
         if deleted is None:
             logger.info(f"Failed to delete item #{indx}")
         
-    set_new_shortcuts(current_shortcuts, shortcuts_path)
+    set_new_shortcuts(shortcuts_path, current_shortcuts)
     update_shortcut_list(current_shortcuts)
     
     

@@ -19,8 +19,11 @@ def get_existing_shortcuts(shortcuts_path: str) -> dict[str, dict[str, str | int
     return {}
 
 
-def set_new_shortcuts(shortcuts_path: str):
-    data_to_save = {"shortcuts": state.shortcuts}
+def set_new_shortcuts(shortcuts_path: str, shortcuts=None):
+    if shortcuts is None:
+        shortcuts = state.shortcuts
+
+    data_to_save = {"shortcuts": shortcuts}
     if os.path.exists(shortcuts_path):
         with open(shortcuts_path, "wb") as f:
             vdf.binary_dump(data_to_save, f)
@@ -51,10 +54,6 @@ def add_new_shortcut(path: str, name: str = ""):
         }
         
         set_new_shortcuts(shortcuts_path)
-
-        set_new_shortcuts(current_shortcuts, shortcuts_path)
-
-        set_new_shortcuts(current_shortcuts, shortcuts_path)
 
 def get_shortcuts_dict(shortcuts_list: QTableWidget) -> dict[str, dict[str, str | int]]:
     headers = [shortcuts_list.horizontalHeaderItem(i).text() for i in range(shortcuts_list.columnCount())]  # type: ignore
