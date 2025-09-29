@@ -19,8 +19,11 @@ def get_existing_shortcuts(shortcuts_path: str) -> dict[str, dict[str, str | int
     return {}
 
 
-def set_new_shortcuts(shortcuts_path: str):
-    data_to_save = {"shortcuts": state.shortcuts}
+def set_new_shortcuts(shortcuts_path: str, shortcuts=None):
+    if shortcuts is None:
+        shortcuts = state.shortcuts
+
+    data_to_save = {"shortcuts": shortcuts}
     if os.path.exists(shortcuts_path):
         with open(shortcuts_path, "wb") as f:
             vdf.binary_dump(data_to_save, f)
@@ -65,3 +68,12 @@ def get_shortcuts_dict(shortcuts_list: QTableWidget) -> dict[str, dict[str, str 
             row_dict[header] = item.text() if item else None
         data[str(row)] = row_dict  # type: ignore # key as string to match vdf-like dicts
     return data
+
+
+def get_shortcut_id_by_appid(app_id: str) -> str:
+    shortcuts = state.shortcuts
+    for _, k in enumerate(shortcuts):
+        shortcut = shortcuts[k]
+        if shortcut["appid"] == app_id:
+            return k
+    return "-1"
